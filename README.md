@@ -42,7 +42,9 @@ Reads text from an MQTT broker and uses espaek-ng as a speech synthesizer to rea
 
 ## Usage ##
 ./MqTTS --host=127.0.0.1 --port=1883 --clientid=MqTTS -d
+
 or
+
 ./MqTTS --config=config.ini -d
 
 ## Dependencies ##
