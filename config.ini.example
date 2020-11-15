@@ -1,0 +1,11 @@
+[MqTTS]
+printing=false
+
+[MQTT-Broker]
+host=127.0.0.1
+port=1883
+clientid="MqTTS"
+
+[MQTT-Topics]
+pub="mqtts/0/pub"
+sub="mqtts/0/sub"
