@@ -25,6 +25,9 @@ Reads text from an MQTT broker and uses espaek-ng as a speech synthesizer to rea
 ### Testing MBROLA Voices ###
     espeak-ng -vmb-de7 -k1 -s120 "Ich bin die neue Stimme von ProjektionTV"
 
+### Install Qt5 ###
+	sudo apt install qt5-default
+    
 ### Install MQTT-Libs ###
     sudo apt install libqt5websockets5-dev
     git clone https://github.com/emqx/qmqtt.git
