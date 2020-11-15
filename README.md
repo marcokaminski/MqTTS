@@ -5,7 +5,7 @@ Reads text from an MQTT broker and uses espaek-ng as a speech synthesizer to rea
 ## Install easpeak-ng on Raspberry Pi ##
     sudo apt install espeak-ng
 
-Testing espeak-ng ###
+Testing espeak-ng
     espeak-ng -vde -k1 -s120 "Ich bin die neue Stimme von ProjektionTV"
 
 Install MBROLA to use MBROLA Voices, on Raspbian this package is missing.
