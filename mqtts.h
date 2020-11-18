@@ -15,12 +15,13 @@
 #define DEFAULT_CLIENTID "MqTTS"
 #define DEFAULT_PUBTOPIC "mqtts/0/pub"
 #define DEFAULT_SUBTOPIC "mqtts/0/sub"
+#define DEFAULT_SOUNDTOPIC "mqtts/0/sounds"
 
 class MqTTS : public QMQTT::Client {
     Q_OBJECT
 
 public:
-    explicit MqTTS(const QHostAddress& host, const quint16 port, const QString clientid, bool print, bool debug = false, QObject *parent = nullptr);
+    explicit MqTTS(const QHostAddress& host, const quint16 port, const QString clientid, bool sounds, bool print, bool debug = false, QObject *parent = nullptr);
     MqTTS(QString configFile, bool debug = false, QObject *parent = nullptr);
 
     ~MqTTS();
@@ -39,12 +40,16 @@ private:
 
     bool printing;
     bool debugging;
+    bool soundEnabled = false;
 
     QSettings *config;
 
     QString clientid = DEFAULT_CLIENTID;
     QString topic_sub = DEFAULT_SUBTOPIC;
     QString topic_pub = DEFAULT_PUBTOPIC;
+    QString topic_sound = DEFAULT_SOUNDTOPIC;
+
+    QMap<QString, QString> filelist;
 };
 
 #endif // MQTTS_H
