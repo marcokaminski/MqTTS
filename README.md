@@ -44,11 +44,19 @@ Reads text from an MQTT broker and uses espaek-ng as a speech synthesizer to rea
     make
 
 ## Usage ##
-./MqTTS --host=127.0.0.1 --port=1883 --clientid=MqTTS -d
+Usage: ./MqTTS [options]  
+Text to Speak over MQTT-Broker  
 
-or
-
-./MqTTS --config=config.ini -d
+Options:  
+  -h, --help           Displays this help.  
+  -v, --version        Displays version information.  
+  --host <ip>          MQTT-Broker hostaddress  
+  --port <port>        MQTT-Broker port  
+  --clientid <name>    Client-ID for MQTT-Broker  
+  -s, --sounds         MP3-Ausgabe aktivieren  
+  -p, --print          Daten auf stdout ausgeben  
+  -c, --config <file>  Konfigurationsdatei  
+  -d, --debug          Debug-Asugaben aktivieren  
 
 ## Dependencies ##
 
