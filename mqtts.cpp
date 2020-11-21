@@ -4,20 +4,20 @@
 
 #include "mqtts.h"
 
-MqTTS::MqTTS(const QHostAddress& host, const quint16 port, QString clientid, bool sounds, bool print, bool debug, QObject *parent) : QMQTT::Client(host, port, parent), out(stdout), err(stderr) {
+MqTTS::MqTTS(const QHostAddress& host, const quint16 port, QString clientid, bool enSounds, bool enPrinting, bool enDebuging, QObject *parent) : QMQTT::Client(host, port, parent), out(stdout), err(stderr) {
     connect(this, SIGNAL(connected()), this, SLOT(startSubscription()));
     connect(this, SIGNAL(received(const QMQTT::Message&)), this, SLOT(parseMessage(const QMQTT::Message&)));
     connect(this, SIGNAL(subscribed(const QString&, const quint8)), this, SLOT(gotSubscription(const QString&, const quint8)));
     connect(this, SIGNAL(published(const QMQTT::Message&, quint16)), this, SLOT(isPublished(const QMQTT::Message&, quint16)));
     connect(this, SIGNAL(error(const QMQTT::ClientError)), this, SLOT(errorHandler(const QMQTT::ClientError)));
 
-    debugging = debug;
-    printing = print;
-    soundEnabled = sounds;
+    debuging = enDebuging;
+    printing = enPrinting;
+    soundEnabled = enSounds;
 
     setClientId(clientid);
 
-    if (debugging) {
+    if (debuging) {
         out << "Host: " << this->host().toString() << endl;
         out << "Port: " << this->port() << endl;
         out << "Client ID: " << this->clientId() << endl;
@@ -25,13 +25,12 @@ MqTTS::MqTTS(const QHostAddress& host, const quint16 port, QString clientid, boo
         out << "Topic Subscription: " << topic_sub << endl;
         out << "Topic Publish: " << topic_pub << endl;
         if (soundEnabled) {
-            out << "Topic Sound (play): " << topic_sound << "/*/play" << endl;
-            out << "Topic Sound (file): " << topic_sound << "/*/file" << endl;
+            out << "Topic Sound: " << topic_sound << endl;
         }
     }
 }
 
-MqTTS::MqTTS(QString configFile, bool debug, QObject*) : out(stdout), err(stderr) {
+MqTTS::MqTTS(QString configFile, bool enDebuging, QObject*) : out(stdout), err(stderr) {
     connect(this, SIGNAL(connected()), this, SLOT(startSubscription()));
     connect(this, SIGNAL(received(const QMQTT::Message&)), this, SLOT(parseMessage(const QMQTT::Message&)));
     connect(this, SIGNAL(subscribed(const QString&, const quint8)), this, SLOT(gotSubscription(const QString&, const quint8)));
@@ -39,9 +38,9 @@ MqTTS::MqTTS(QString configFile, bool debug, QObject*) : out(stdout), err(stderr
     connect(this, SIGNAL(error(const QMQTT::ClientError)), this, SLOT(errorHandler(const QMQTT::ClientError)));
 
     config = new QSettings(configFile, QSettings::IniFormat);
-    debugging = debug;
+    debuging = enDebuging;
 
-    if (debugging) {
+    if (debuging) {
         out << "Lese Konfigurationsdatei: " << configFile << endl;
     }
 
@@ -51,7 +50,7 @@ MqTTS::MqTTS(QString configFile, bool debug, QObject*) : out(stdout), err(stderr
     setClientId(config->value("clientid", DEFAULT_CLIENTID).toString());
     config->endGroup();
 
-    if (debugging) {
+    if (debuging) {
         out << "Host: " << this->host().toString() << endl;
         out << "Port: " <<this->port() << endl;
         out << "Clienz ID: " << this->clientId() << endl;
@@ -61,7 +60,7 @@ MqTTS::MqTTS(QString configFile, bool debug, QObject*) : out(stdout), err(stderr
     printing = config->value("printing", false).toBool();
     config->endGroup();
 
-    if (debugging) {
+    if (debuging) {
         out << "Ausgabe der Nachrichten: " << printing << endl;
     }
 
@@ -76,18 +75,17 @@ MqTTS::MqTTS(QString configFile, bool debug, QObject*) : out(stdout), err(stderr
 
     config->endGroup();
 
-    if (debugging) {
+    if (debuging) {
         out << "Topic Subscription: " << topic_sub << endl;
         out << "Topic Publish: " << topic_pub << endl;
         if (soundEnabled) {
-            out << "Topic Sound (play): " << topic_sound << "/*/play" << endl;
-            out << "Topic Sound (file): " << topic_sound << "/*/file" << endl;
+            out << "Topic Sound: " << topic_sound << endl;
         }
     }
 }
 
 void MqTTS::startSubscription() {
-    if (debugging) {
+    if (debuging) {
         out << "Verbindung zu Broker hergestellt" << endl;
     }
 
@@ -98,25 +96,24 @@ void MqTTS::startSubscription() {
             unsubscribe(topic_sound);
         }
 
-        if (debugging) {
+        if (debuging) {
             out << "Bestätige Verbindung." << endl;
         }
 
         QMQTT::Message message(0, topic_pub, "MqTTS verbunden");
         quint16 msgid = publish(message);
 
-        if (debugging) {
+        if (debuging) {
             out << "publish Nachricht mit ID: " << msgid << endl;
         }
 
-        if (debugging) {
+        if (debuging) {
             out << "starte subscription" << endl;
         }
 
         subscribe(topic_sub, 0);
         if(soundEnabled) {
-            subscribe(topic_sound + "/*/play", 0);
-            subscribe(topic_sound + "/*/file", 0);
+            subscribe(topic_sound, 0);
         }
     }
 }
@@ -125,7 +122,7 @@ void MqTTS::parseMessage(const QMQTT::Message& message) {
     QString payload(message.payload());
 
     if (message.topic() == topic_sub) {
-        if (printing || debugging) {
+        if (printing || debuging) {
             out << "Message: " << payload << endl;
         }
 
@@ -137,96 +134,64 @@ void MqTTS::parseMessage(const QMQTT::Message& message) {
         arguments << "-s" << "120";
         arguments << QString("\"%1\"").arg(payload);
 
-        if (printing || debugging) {
+        if (printing || debuging) {
             out << "Starte Sprachausgabe"  << endl;
         }
 
         QProcess::execute(program, arguments);
 
-        if (printing || debugging) {
+        if (printing || debuging) {
             out << "Sprachausgabe beendet" << endl;
         }
-    } else if (soundEnabled && message.topic().contains("play")) {
-        if (printing || debugging) {
-            out << "Topic: " << message.topic() << endl;
+    } else if (soundEnabled && message.topic() == topic_sound) {
+        if (printing || debuging) {
             out << "Message: " << payload << endl;
         }
 
-        if (payload == "true") {
-            QStringList topicParts = message.topic().split('/');
-            QString sound = topicParts[topicParts.size() - 2];
-            QString file = filelist.value(sound, "");
-
-            if (file.isEmpty()) {
-                out << "Keine Datei zum abspielen im MqTT-Broker hinterlegt." << endl;
-            } else {
-                if (printing || debugging) {
-                    out << "Starte Soundausgabe"  << endl;
-                }
-
-                QString program = "mpg123";
-                QStringList arguments;
-                arguments << QString("%1").arg(file);
-
-                QProcess::execute(program, arguments);
-
-                if (printing || debugging) {
-                    out << "Soundausgabe beendet" << endl;
-                }
-            }
-
-            quint16 msgid = publish(QMQTT::Message(1, message.topic(), "false"));
-
-            if (debugging) {
-                out << "publish Nachricht mit ID: " << msgid << " on topic: " << message.topic() << endl;
-            }
-        }
-    } else if (soundEnabled && message.topic().contains("file")) {
-        if (printing || debugging) {
-            out << "Topic: " << message.topic() << endl;
-            out << "Message: " << payload << endl;
+        if (printing || debuging) {
+            out << "Starte Soundausgabe"  << endl;
         }
 
-        QStringList topicParts = message.topic().split('/');
-        QString sound = topicParts[topicParts.size() - 2];
-        QString file = payload;
+        QString program = "omxplayer";
+        QStringList arguments;
+        arguments << "-o" << "local";
+        arguments << QString("%1").arg(payload);
 
-        if (printing || debugging) {
-            out << "Sound: " << sound << endl;
-            out << "File: " << file << endl;
+        QProcess::execute(program, arguments);
+
+        if (printing || debuging) {
+            out << "Soundausgabe beendet" << endl;
         }
-
-        filelist.insert(sound, file);
     }
 }
 
 void MqTTS::gotSubscription(const QString& topic, const quint8) {
-    if (debugging) {
+    if (debuging) {
         out << topic << " subscribed" << endl;
     }
 }
 
 void MqTTS::isPublished(const QMQTT::Message& message, quint16) {
-    if (debugging) {
+    if (debuging) {
         out << "Message \"" << message.payload() << "\" published." << endl;
     }
 }
 
 void MqTTS::errorHandler(const QMQTT::ClientError error) {
-    if (debugging) {
+    if (debuging) {
         err << "MQTT Error: " << error << endl;
     }
 }
 
 MqTTS::~MqTTS() {
     if(isConnectedToHost()) {
-        if (debugging) {
+        if (debuging) {
             out << "Unsubscribe topic" << endl;
         }
 
         unsubscribe(topic_sub);
 
-        if (debugging) {
+        if (debuging) {
             out << "Verbindung zum Broker trennen" << endl;
         }
 

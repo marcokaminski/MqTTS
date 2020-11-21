@@ -39,7 +39,7 @@ private:
     QTextStream out, err;
 
     bool printing;
-    bool debugging;
+    bool debuging;
     bool soundEnabled = false;
 
     QSettings *config;
@@ -48,8 +48,6 @@ private:
     QString topic_sub = DEFAULT_SUBTOPIC;
     QString topic_pub = DEFAULT_PUBTOPIC;
     QString topic_sound = DEFAULT_SOUNDTOPIC;
-
-    QMap<QString, QString> filelist;
 };
 
 #endif // MQTTS_H
